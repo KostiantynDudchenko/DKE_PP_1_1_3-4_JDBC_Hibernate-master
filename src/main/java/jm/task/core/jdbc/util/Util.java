@@ -10,10 +10,15 @@ public class Util {
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "root";
 
-    public static Connection getConnection() throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/user",
-                "root", "root");
-
+    public static Connection getConnection() {
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/user",
+                    "root", "root");
+            System.out.println("Connection OK");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return connection;
     }
 }
