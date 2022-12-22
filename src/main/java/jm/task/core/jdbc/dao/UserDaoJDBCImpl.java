@@ -12,15 +12,27 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     private final Connection connection = Util.getConnection();
+
     public void createUsersTable() {
-        String sql =
-                "CREATE TABLE user9 (" +
-                        "userId INTEGER NOT NULL AUTO_INCREMENT, " +
-                        "userName CHAR(45), userSurname CHAR(45), userAge TINYINT, PRIMARY KEY (userId))";
+        String sql = "CREATE TABLE IF NOT EXISTS user9 (userId INTEGER NOT NULL AUTO_INCREMENT,"
+                + "userName CHAR(45), userSurname CHAR(45), userAge TINYINT, PRIMARY KEY (userId))";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            connection.setAutoCommit(false);
             preparedStatement.execute();
+            connection.commit();
         } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
             e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -31,35 +43,56 @@ public class UserDaoJDBCImpl implements UserDao {
             connection.setAutoCommit(false);
             preparedStatement.execute();
             connection.commit();
-            connection.setAutoCommit(true);
         } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
             e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
         String sql = "INSERT INTO user9 (userName, userSurname, userAge) VALUES ('" + name + "', '" + lastName + "', " + age + ")";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             connection.setAutoCommit(false);
             preparedStatement.execute();
             connection.commit();
-            connection.setAutoCommit(true);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     public void removeUserById(long id) {
         String sql = "DELETE FROM user9 WHERE `userId` = " + id;
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        PreparedStatement preparedStatement = null;
+        try {
+            preparedStatement = connection.prepareStatement(sql);
             connection.setAutoCommit(false);
             preparedStatement.execute();
             connection.commit();
-            connection.setAutoCommit(true);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -93,9 +126,14 @@ public class UserDaoJDBCImpl implements UserDao {
             connection.setAutoCommit(false);
             preparedStatement.execute();
             connection.commit();
-            connection.setAutoCommit(true);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
